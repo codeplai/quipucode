@@ -1,0 +1,4 @@
+name: Suma de dos enteros
+validation: default
+limits:
+    memory: 256

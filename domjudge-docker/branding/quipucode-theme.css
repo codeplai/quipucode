@@ -1,0 +1,202 @@
+/* ================================================================
+   QuipuCode — Plataforma de Programación Competitiva
+   Inspirada en la sabiduría del Tawantinsuyu y el arte del Quipu
+   ================================================================ */
+
+:root {
+  --qp-inti:     #D4A017;   /* Dorado del Sol (Inti)          */
+  --qp-inti-clr: #F0D060;   /* Oro claro (Quri)               */
+  --qp-imperial: #7A1F1F;   /* Rojo imperial Inca             */
+  --qp-pacha:    #4A2C0A;   /* Tierra oscura (Pacha Mama)     */
+  --qp-hanan:    #1A3A5C;   /* Azul cielo andino (Hanan Pacha)*/
+  --qp-yana:     #120800;   /* Negro noche andina (Yana)      */
+  --qp-sisa:     #2D6A4F;   /* Verde flora andina (Sisa)      */
+  --qp-piedra:   #8B7355;   /* Piedra de Sacsayhuamán         */
+}
+
+/* ── Franja andina superior (patrón tocapu) ──────────────────── */
+body::before {
+  content: "";
+  display: block;
+  height: 5px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--qp-inti)     0px,   10px,
+    var(--qp-imperial) 10px,  20px,
+    var(--qp-inti)     20px,  30px,
+    var(--qp-pacha)    30px,  40px
+  );
+}
+
+/* ── Navbar principal ────────────────────────────────────────── */
+.navbar,
+nav.navbar {
+  background: linear-gradient(
+    135deg,
+    var(--qp-imperial) 0%,
+    var(--qp-pacha)    60%,
+    var(--qp-yana)     100%
+  ) !important;
+  border-bottom: 3px solid var(--qp-inti) !important;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.5);
+}
+
+.navbar-brand {
+  color: var(--qp-inti) !important;
+  font-weight: 900;
+  font-size: 1.45rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.navbar-brand:hover { color: var(--qp-inti-clr) !important; }
+
+/* Añade el símbolo Chakana (⊕) antes del nombre */
+.navbar-brand::before {
+  content: "⊕ ";
+  font-weight: 400;
+  opacity: 0.85;
+}
+
+.nav-link       { color: rgba(240, 208, 96, 0.85) !important; }
+.nav-link:hover { color: var(--qp-inti) !important; }
+
+.navbar-toggler-icon {
+  filter: invert(1) sepia(1) saturate(3) hue-rotate(5deg);
+}
+
+/* ── Encabezados ─────────────────────────────────────────────── */
+h1, h2, h3 { color: var(--qp-imperial); }
+h4, h5, h6 { color: var(--qp-pacha); }
+
+/* ── Botones primarios ───────────────────────────────────────── */
+.btn-primary,
+.btn-primary:visited {
+  background-color: var(--qp-imperial) !important;
+  border-color:     var(--qp-inti)     !important;
+  color:            var(--qp-inti-clr) !important;
+  font-weight: 600;
+}
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: var(--qp-inti)  !important;
+  border-color:     var(--qp-pacha) !important;
+  color:            var(--qp-yana)  !important;
+}
+
+/* ── Botones secundarios ─────────────────────────────────────── */
+.btn-secondary {
+  background-color: var(--qp-piedra)   !important;
+  border-color:     var(--qp-imperial) !important;
+  color:            #fff !important;
+}
+
+/* ── Tabla y scoreboard ──────────────────────────────────────── */
+.table thead th,
+thead > tr > th {
+  background-color: var(--qp-imperial) !important;
+  color:            var(--qp-inti)     !important;
+  border-color:     var(--qp-inti)     !important;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(212, 160, 23, 0.05) !important;
+}
+
+/* Primer lugar en el scoreboard */
+.scoreboard tbody tr:first-child td,
+tr.score_first td {
+  background-color: rgba(212, 160, 23, 0.18) !important;
+  font-weight: 700;
+  border-left: 4px solid var(--qp-inti) !important;
+}
+
+/* ── Veredictos de envío ─────────────────────────────────────── */
+.score_correct,
+.submission-result-correct,
+.result-ac,
+td.score_correct {
+  background-color: var(--qp-sisa) !important;
+  color: #fff !important;
+}
+
+.score_incorrect,
+.submission-result-incorrect,
+.result-wa,
+td.score_incorrect {
+  background-color: var(--qp-imperial) !important;
+  color: #fff !important;
+}
+
+/* ── Cards y paneles ─────────────────────────────────────────── */
+.card {
+  border-top:   3px solid var(--qp-inti) !important;
+  border-color: #e0d5c0 !important;
+}
+
+.card-header {
+  background-color: var(--qp-imperial) !important;
+  color:            var(--qp-inti)     !important;
+  font-weight: 600;
+}
+
+/* ── Badges ──────────────────────────────────────────────────── */
+.badge-primary,
+.badge.bg-primary { background-color: var(--qp-imperial) !important; }
+.badge-success,
+.badge.bg-success { background-color: var(--qp-sisa)     !important; }
+.badge-warning,
+.badge.bg-warning { background-color: var(--qp-inti)     !important; color: var(--qp-yana) !important; }
+
+/* ── Alertas ─────────────────────────────────────────────────── */
+.alert-info {
+  background-color: rgba(26, 58, 92, 0.12) !important;
+  border-color:     var(--qp-hanan) !important;
+  color:            var(--qp-hanan) !important;
+}
+
+/* ── Formularios ─────────────────────────────────────────────── */
+.form-control:focus {
+  border-color: var(--qp-inti) !important;
+  box-shadow: 0 0 0 0.2rem rgba(212, 160, 23, 0.25) !important;
+}
+
+/* ── Footer ──────────────────────────────────────────────────── */
+footer,
+.footer,
+.container > footer {
+  background:  var(--qp-yana)  !important;
+  border-top:  3px solid var(--qp-inti);
+  color:       var(--qp-inti-clr) !important;
+  padding:     1rem;
+  text-align:  center;
+}
+
+/* Lema Inca al pie */
+footer::after,
+.footer::after {
+  content: " — Tejiendo código en el Tawantinsuyu ⊕";
+  display: block;
+  color:       var(--qp-piedra);
+  font-style:  italic;
+  font-size:   0.85rem;
+  margin-top:  0.4rem;
+}
+
+/* ── Login / jumbotron ───────────────────────────────────────── */
+.jumbotron,
+.container-fluid.bg-dark {
+  background: linear-gradient(
+    135deg,
+    var(--qp-yana)     0%,
+    var(--qp-imperial) 100%
+  ) !important;
+  color: var(--qp-inti-clr) !important;
+}
+
+/* ── Paginación ──────────────────────────────────────────────── */
+.page-item.active .page-link {
+  background-color: var(--qp-imperial) !important;
+  border-color:     var(--qp-inti)     !important;
+}
+.page-link { color: var(--qp-imperial) !important; }
+.page-link:hover { background-color: rgba(212,160,23,0.15) !important; }

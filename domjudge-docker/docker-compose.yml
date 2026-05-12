@@ -1,0 +1,66 @@
+services:
+  mariadb:
+    image: mariadb:11
+    command: --max-connections=1000 --innodb-log-file-size=128M
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: domjudge
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: domjudge
+    volumes:
+      - db:/var/lib/mysql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  domserver:
+    image: domjudge/domserver:latest
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    environment:
+      MYSQL_HOST: mariadb
+      MYSQL_USER: domjudge
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: domjudge
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      TZ: America/Lima
+    expose:
+      - "80"
+    restart: unless-stopped
+
+  # Proxy inverso QuipuCode: inyecta tema Inca y sirve quipucode.xyz
+  nginx:
+    image: nginx:alpine
+    depends_on:
+      - domserver
+    ports:
+      - "80:80"
+      - "12345:12345"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./branding/quipucode-theme.css:/usr/share/nginx/html/quipucode-theme.css:ro
+    restart: unless-stopped
+
+  judgehost-0:
+    build: ./judgehost
+    privileged: true
+    hostname: judgehost-0
+    depends_on:
+      - domserver
+    environment:
+      DAEMON_ID: 0
+      JUDGEDAEMON_PASSWORD: ${JUDGEDAEMON_PASSWORD}
+      DOMSERVER_BASEURL: http://domserver/
+      TZ: America/Lima
+      CONTAINER_TIMEZONE: America/Lima
+    links:
+      - domserver
+    restart: unless-stopped
+
+volumes:
+  db:
