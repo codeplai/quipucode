@@ -55,6 +55,24 @@ if ! command -v certbot &>/dev/null; then
   apt-get install -y -q certbot
 fi
 
+# ── Limpiar cuentas ACME corruptas o de otra máquina ────────────
+ACME_ACCOUNTS="/etc/letsencrypt/accounts/acme-v02.api.letsencrypt.org"
+if [ -d "$ACME_ACCOUNTS" ]; then
+  # Detectar si la cuenta local ya no existe en el servidor ACME
+  ACME_DIR=$(find "$ACME_ACCOUNTS" -name "meta.json" -print -quit 2>/dev/null || true)
+  if [ -n "$ACME_DIR" ]; then
+    ACME_URL=$(python3 -c "import json,sys; d=json.load(open('$ACME_DIR')); print(d.get('uri',''))" 2>/dev/null || true)
+    if [ -n "$ACME_URL" ]; then
+      HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 5 "$ACME_URL" || echo "000")
+      if [ "$HTTP_CODE" = "404" ] || [ "$HTTP_CODE" = "000" ]; then
+        warn "Cuenta ACME local inválida (HTTP $HTTP_CODE). Limpiando..."
+        rm -rf /etc/letsencrypt/accounts/
+        ok "Cuenta ACME eliminada. Se registrará una nueva."
+      fi
+    fi
+  fi
+fi
+
 # ── Detener nginx si está corriendo (certbot necesita el puerto 80) ──
 if docker compose ps nginx 2>/dev/null | grep -q "Up"; then
   echo "Deteniendo nginx temporalmente..."
@@ -72,7 +90,8 @@ certbot certonly \
   --agree-tos \
   --email "$EMAIL" \
   -d "$DOMAIN" \
-  -d "www.$DOMAIN"
+  -d "www.$DOMAIN" \
+  --keep-until-expiring
 
 ok "Certificado obtenido en /etc/letsencrypt/live/$DOMAIN/"
 
