@@ -32,7 +32,7 @@ fi
 info "Creando ejecutable y lenguaje Go (DOMjudge 8.3+ schema)..."
 
 # ── Build script ──────────────────────────────────────────
-cat > /tmp/go_build.sh << 'BUILDSCRIPT'
+cat > /tmp/go_build_file << 'BUILDSCRIPT'
 #!/bin/sh
 DEST="$1"; shift
 MEMLIMIT="$1"; shift
@@ -44,19 +44,29 @@ export GOFLAGS=""
 export GONOSUMDB="*"
 exec /usr/local/go/bin/go build -o "$DEST" "$@"
 BUILDSCRIPT
+chmod +x /tmp/go_build_file
 
-HEX=$(xxd -p /tmp/go_build.sh | tr -d '\n')
-MD5=$(md5sum /tmp/go_build.sh | cut -d' ' -f1)
-info "Script: $((${#HEX}/2)) bytes — MD5: ${MD5}"
+# DOMjudge empaqueta los archivos en ZIP para enviarlos al judgehost.
+# El hash en immutable_executable debe ser el MD5 del ZIP, no del archivo crudo.
+cp /tmp/go_build_file /tmp/build
+cd /tmp && zip -q go_compile.zip build && cd - > /dev/null
+rm -f /tmp/build
+
+ZIP_MD5=$(md5sum /tmp/go_compile.zip | cut -d' ' -f1)
+ZIP_HEX=$(xxd -p /tmp/go_compile.zip | tr -d '\n')
+FILE_HEX=$(xxd -p /tmp/go_build_file | tr -d '\n')
+FILE_MD5=$(md5sum /tmp/go_build_file | cut -d' ' -f1)
+info "ZIP: $((${#ZIP_HEX}/2)) bytes — MD5 ZIP: ${ZIP_MD5}"
+rm -f /tmp/go_compile.zip /tmp/go_build_file
 
 # ── SQL ───────────────────────────────────────────────────
 SQL_FILE="/tmp/add_go_$(date +%s).sql"
 cat > "${SQL_FILE}" << SQLEOF
-INSERT INTO immutable_executable (userid, hash) VALUES (NULL, '${MD5}');
+INSERT INTO immutable_executable (userid, hash) VALUES (NULL, '${ZIP_MD5}');
 SET @imm_id = LAST_INSERT_ID();
 INSERT INTO executable_file
   (immutable_execid, filename, ranknumber, file_content, hash, is_executable)
-  VALUES (@imm_id, 'build', 1, 0x${HEX}, '${MD5}', 1);
+  VALUES (@imm_id, 'build', 1, 0x${FILE_HEX}, '${FILE_MD5}', 1);
 INSERT IGNORE INTO executable (execid, type, description, immutable_execid)
   VALUES ('go', 'compile', 'go', @imm_id);
 INSERT IGNORE INTO language

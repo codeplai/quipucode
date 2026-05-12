@@ -1,9 +1,20 @@
 package main
 
-import "fmt"
+import (
+	"bufio"
+	"fmt"
+	"os"
+)
+
+var reader *bufio.Reader
+var writer *bufio.Writer
 
 func main() {
+	reader = bufio.NewReader(os.Stdin)
+	writer = bufio.NewWriter(os.Stdout)
+	defer writer.Flush()
+
 	var a, b int
-	fmt.Scan(&a, &b)
-	fmt.Println(a + b)
+	fmt.Fscan(reader, &a, &b)
+	fmt.Fprintln(writer, a+b)
 }
