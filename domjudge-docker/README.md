@@ -296,17 +296,26 @@ docker compose up -d mariadb domserver  # reinicia limpio
 
 **Regla:** usa siempre `openssl rand -hex 32` para las contraseñas de `.env`.
 
-### 6. Cgroups v2 incompatibles (judgehost falla al iniciar)
+### 6. Judgehost en bucle — `Cannot add +memory to cgroup.subtree_control`
 
-En Ubuntu 22.04, `setup_server.sh` ya configura `cgroup_enable=memory` en GRUB.
-Si el problema persiste:
+**Causa:** Ubuntu 22.04 usa cgroups v2 por defecto. El judgehost necesita cgroups v1
+(`cgroup_enable=memory`) pero también hay que forzar la jerarquía unificada a v1
+(`systemd.unified_cgroup_hierarchy=0`). Sin este parámetro el controlador de memoria
+no se puede montar aunque `cgroup_enable=memory` esté presente.
 
+**Solución:**
 ```bash
-grep cgroup /proc/cmdline          # debe mostrar cgroup_enable=memory
-docker compose logs judgehost-0    # ver el error exacto
+# Agregar el parámetro faltante
+sed -i 's/GRUB_CMDLINE_LINUX_DEFAULT="\(.*\)"/GRUB_CMDLINE_LINUX_DEFAULT="\1 systemd.unified_cgroup_hierarchy=0"/' /etc/default/grub
+
+# Verificar que los tres parámetros están presentes
+grep GRUB_CMDLINE_LINUX_DEFAULT /etc/default/grub
+# Debe contener: cgroup_enable=memory swapaccount=1 systemd.unified_cgroup_hierarchy=0
+
+update-grub && reboot
 ```
 
-Solución alternativa: usa imagen `domjudge/judgehost` versión ≥ 8.3.
+Tras el reboot verifica: `grep cgroup /proc/cmdline`
 
 ### 6. SSL: nginx no arranca (certificados no encontrados)
 

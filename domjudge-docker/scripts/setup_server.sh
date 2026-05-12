@@ -170,8 +170,9 @@ ok "UFW configurado: SSH, 80, 443, 12345."
 echo "=== 8. Habilitando cgroup memory para judgehost ==="
 GRUB_CFG=/etc/default/grub
 if ! grep -q "cgroup_enable=memory" "$GRUB_CFG"; then
+  # Ubuntu 22.04 usa cgroups v2 por defecto; se fuerza v1 para el judgehost
   sed -i \
-    's/GRUB_CMDLINE_LINUX_DEFAULT="\(.*\)"/GRUB_CMDLINE_LINUX_DEFAULT="\1 cgroup_enable=memory swapaccount=1"/' \
+    's/GRUB_CMDLINE_LINUX_DEFAULT="\(.*\)"/GRUB_CMDLINE_LINUX_DEFAULT="\1 cgroup_enable=memory swapaccount=1 systemd.unified_cgroup_hierarchy=0"/' \
     "$GRUB_CFG"
   update-grub
   ok "GRUB modificado."
