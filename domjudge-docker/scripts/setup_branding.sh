@@ -29,11 +29,16 @@ echo "║    Tawantinsuyu de la Programación           ║"
 echo "╚══════════════════════════════════════════════╝"
 echo ""
 
+# Función auxiliar: ejecuta SQL sin TTY
+db_exec() {
+  docker compose exec -T mariadb \
+    mariadb -u root -p"${MYSQL_ROOT_PASSWORD}" domjudge -e "$1"
+}
+
 # Esperar a que domserver haya creado las tablas
 echo "⏳ Esperando que domserver inicialice la base de datos..."
 RETRIES=20
-until docker compose exec mariadb mariadb -u root -p"${MYSQL_ROOT_PASSWORD}" domjudge \
-      -e "SELECT 1 FROM configuration LIMIT 1;" &>/dev/null; do
+until db_exec "SELECT 1 FROM configuration LIMIT 1;" &>/dev/null; do
   RETRIES=$((RETRIES - 1))
   if [ "$RETRIES" -le 0 ]; then
     echo "[ERROR] Timeout esperando la tabla 'configuration'. ¿Está domserver levantado?"
@@ -46,19 +51,12 @@ done
 echo "✓ Tablas listas."
 echo ""
 
-# Actualizar (o insertar) el nombre del sitio
-docker compose exec mariadb mariadb -u root -p"${MYSQL_ROOT_PASSWORD}" domjudge <<'SQL'
-INSERT INTO configuration (name, value, type, public, category, description)
-VALUES (
-  'domjudge_site_name',
-  '"QuipuCode"',
-  'string',
-  1,
-  'General',
-  'Nombre de la plataforma de programación competitiva'
-)
-ON DUPLICATE KEY UPDATE value = '"QuipuCode"';
-SQL
+# Actualizar (o insertar) el nombre del sitio usando -e en lugar de heredoc
+SITE_SQL="INSERT INTO configuration (name, value, type, public, category, description)
+  VALUES ('domjudge_site_name', '\"QuipuCode\"', 'string', 1, 'General', 'Nombre del sitio')
+  ON DUPLICATE KEY UPDATE value = '\"QuipuCode\"';"
+
+db_exec "$SITE_SQL"
 
 echo "✓ Nombre del sitio → QuipuCode"
 echo ""
