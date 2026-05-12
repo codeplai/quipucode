@@ -90,18 +90,22 @@ cp .env.example .env
 nano .env
 ```
 
-Reemplaza los valores de ejemplo por contraseñas seguras:
+Genera contraseñas seguras con este comando (**hex obligatorio** — base64 rompe la conexión):
 
-```env
-MYSQL_ROOT_PASSWORD=UnaContraseñaRootMuySegura2024
-
-MYSQL_PASSWORD=UnaContraseñaDomjudgeMuySegura2024
-
-JUDGEDAEMON_PASSWORD=   # ← se completa en el paso 6
+```bash
+openssl rand -hex 32   # ejecuta dos veces: una para cada contraseña
 ```
 
-> Usa contraseñas de al menos 20 caracteres con letras, números y símbolos.
-> Puedes generar una con: `openssl rand -base64 32`
+Edita `.env` con los valores generados:
+
+```env
+MYSQL_ROOT_PASSWORD=a3f8c2d1e9b47f6a0c5d8e3f2a1b4c7d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4
+MYSQL_PASSWORD=1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2
+JUDGEDAEMON_PASSWORD=   # ← se completa en el paso 7
+```
+
+> **Importante**: usa SOLO `openssl rand -hex 32` (hexadecimal). NO uses `base64` ni contraseñas
+> con caracteres `+` `/` `=` `@` `#` — esos caracteres rompen la URL de conexión de la base de datos.
 
 ---
 

@@ -279,7 +279,24 @@ docker compose logs mariadb --tail 20
 # Cuando aparezca "ready for connections", levanta domserver.
 ```
 
-### 5. Cgroups v2 incompatibles (judgehost falla al iniciar)
+### 5. "Malformed database connection URL" — domserver en bucle
+
+**Causa:** La contraseña en `.env` contiene caracteres especiales (`+`, `/`, `=`, `@`) que
+rompen la URL de conexión que DOMjudge construye internamente (`mysql://user:PASS@host/db`).
+Ocurre al usar `openssl rand -base64 32`.
+
+**Solución:**
+```bash
+docker compose down -v                  # borra todo (incluido el volumen de BD)
+openssl rand -hex 32                    # genera password SIN caracteres especiales
+# Edita .env con los nuevos valores hex
+nano .env
+docker compose up -d mariadb domserver  # reinicia limpio
+```
+
+**Regla:** usa siempre `openssl rand -hex 32` para las contraseñas de `.env`.
+
+### 6. Cgroups v2 incompatibles (judgehost falla al iniciar)
 
 En Ubuntu 22.04, `setup_server.sh` ya configura `cgroup_enable=memory` en GRUB.
 Si el problema persiste:
